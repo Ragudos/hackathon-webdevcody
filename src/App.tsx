@@ -1,9 +1,18 @@
 import React from "react";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-const App: React.FC = () => (
-  <React.Fragment>
+const router = createBrowserRouter([
+  {
+    path: "/",
+    lazy: () => import("./pages/root"),
+  }
+], {
+  future: {
+    // Normalize `useNavigation()`/`useFetcher()` `formMethod` to uppercase
+    v7_normalizeFormMethod: true,
+  }
+});
 
-  </React.Fragment>
-);
+const App: React.FC = () => <RouterProvider router={router} />;
 
 export default App;

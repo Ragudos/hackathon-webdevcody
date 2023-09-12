@@ -1,0 +1,4 @@
+{"message": "Sup bro!", "sender": { "uid": "1" }, "receiver": { "uid": "2" }}
+{"message": "Hey!", "sender": { "uid": "2" }, "receiver": { "uid": "1"}}
+{"message": "How are ya?", "sender": { "uid": "1"}, "receiver": { "uid": "2" }}
+{"message": "I've been alright. Thanks!", "sender": { "uid": "2"}, "receiver": { "uid": "1" }}
