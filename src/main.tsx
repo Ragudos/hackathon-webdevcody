@@ -1,5 +1,5 @@
 import "./styles/normalize.css";
-import "./styles/globals.scss";
+import "./styles/globals.css";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -18,7 +18,6 @@ if (!secret && !clerkSecret) {
 }
 
 const convex = new ConvexReactClient(secret);
-
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -1,7 +1,7 @@
 
 import React from "react";
 
-type Themes = "dark" | "light" | "system"
+export type Themes = "dark" | "light" | "system"
 
 type Theme = {
   theme: Themes;
@@ -31,10 +31,8 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({
     if ((!storedTheme) || storedTheme === "system") {
       const query = window.matchMedia("(prefers-color-scheme: dark)");
       if (query.matches) {
-        setTheme("dark");
         html.classList.add("dark");
       } else {
-        setTheme("light");
         html.classList.add("light");
       }
     } else if (storedTheme === "light" || storedTheme === "dark") {

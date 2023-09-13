@@ -1,4 +1,5 @@
-import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+import { internalQuery, mutation, query } from "./_generated/server";
 
 /**
  * Insert or update the user in a Convex table then return the document's ID.
@@ -40,4 +41,16 @@ export const store = mutation({
       tokenIdentifier: identity.tokenIdentifier,
     });
   },
+});
+
+export const getUser = internalQuery({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    return (await ctx.db.query("users").withIndex("by_token", (q) =>
+      q.eq("tokenIdentifier", identity.tokenIdentifier)).unique());
+  }
 });

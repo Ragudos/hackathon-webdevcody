@@ -1,23 +1,41 @@
 import React from "react";
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";
+
+import useStoreUser from "@/lib/useStoreUser";
+
 import { Heading } from "../components/ui/heading";
-import { Toaster } from "react-hot-toast";
 import { Header } from "../components/header";
+import { useUser } from "@clerk/clerk-react";
 
-export const Component: React.FC = () => (
+const LandingPage = React.lazy(() => import("./root/landingpage"));
+const LoggedInPage = React.lazy(() => import("./root/logged-in"));
+
+export const Component: React.FC = () => {
+  const { isLoading, isAuthenticated } = useStoreUser();
+  const { user } = useUser();
+
+  return (
     <React.Fragment>
-      <Toaster
-        position="top-right"
-        toastOptions={{ duration: 5000, }}
-      />
-
       <Header />
 
-      <footer>
+      <main className="container py-12">
+        {!isAuthenticated && !isLoading
+          ? <React.Suspense>
+            <LandingPage />
+          </React.Suspense>
+          : <React.Suspense>
+            <LoggedInPage
+              displayName={user?.username as string}
+            />
+          </React.Suspense>
+        }
+      </main>
 
+      <footer className="container">
       </footer>
     </React.Fragment>
   );
+};
 
 Component.displayName = "RootPage";
 
@@ -25,7 +43,7 @@ export const ErrorBoundary = () => {
   const error = useRouteError() as Error | string;
 
   return (
-    <main className="grid-center screen">
+    <main className="grid place-items-center h-screen">
       {isRouteErrorResponse(error)
         ? (
           <Heading
