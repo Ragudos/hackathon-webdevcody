@@ -5,12 +5,17 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 const router = createBrowserRouter(
 	[
 		{
-			path: "/",
 			lazy: () => import("./pages/root"),
-		},
-		{
-			path: "/profile",
-			lazy: () => import("./pages/profile"),
+			children: [
+				{
+					path: "/",
+					lazy: () => import("./pages/index")
+				},
+				{
+					path: "/profile/*",
+					lazy: () => import("./pages/profile"),
+				},
+			]
 		},
 	],
 	{

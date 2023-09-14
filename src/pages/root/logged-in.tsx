@@ -260,7 +260,7 @@ const LoggedInPage: React.FC = () => {
               >
                 <div className="text-end text-xs mb-1">
                   
-                  <time className="group-hover:opacity-0" dateTime={new Date(note._creationTime).toISOString()}>
+                  <time className="select-none group-hover:opacity-0" dateTime={new Date(note._creationTime).toISOString()}>
                     {new Date(note._creationTime).toDateString()}
                   </time>
                 </div>

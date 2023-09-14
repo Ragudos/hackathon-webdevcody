@@ -1,41 +1,18 @@
 import React from "react";
-import { isRouteErrorResponse, useRouteError } from "react-router-dom";
-
-import useStoreUser from "@/lib/useStoreUser";
+import { Outlet, isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import { Heading } from "../components/ui/heading";
 import { Header } from "../components/header";
 
-const LandingPage = React.lazy(() => import("./root/landingpage"));
-const LoggedInPage = React.lazy(() => import("./root/logged-in"));
-
-export const Component: React.FC = () => {
-	const { isLoading, isAuthenticated } = useStoreUser();
-
-	return (
+export const Component: React.FC = () => (
 		<React.Fragment>
 			<Header />
-
 			<main className="container py-12">
-				{!isLoading && (
-					<React.Fragment>
-						{!isAuthenticated ? (
-							<React.Suspense>
-								<LandingPage />
-							</React.Suspense>
-						) : (
-							<React.Suspense>
-								<LoggedInPage />
-							</React.Suspense>
-						)}
-					</React.Fragment>
-				)}
+				<Outlet />
 			</main>
-
 			<footer className="container"></footer>
 		</React.Fragment>
 	);
-};
 
 Component.displayName = "RootPage";
 
