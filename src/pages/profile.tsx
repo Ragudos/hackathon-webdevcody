@@ -3,7 +3,7 @@ import { useUser } from "@clerk/clerk-react";
 
 import { AuthWrapper } from "@/components/auth-wapper";
 
-const Component: React.FC = () => {
+export const Component: React.FC = () => {
 	const { user } = useUser();
 
 	return (
@@ -14,4 +14,3 @@ const Component: React.FC = () => {
 };
 
 Component.displayName = "ProfilePage";
-export { Component };

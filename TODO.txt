@@ -1,0 +1,1 @@
+ Use search query for searching/filtering of notes.

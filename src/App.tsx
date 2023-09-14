@@ -15,6 +15,10 @@ const router = createBrowserRouter(
 					path: "/profile/*",
 					lazy: () => import("./pages/profile"),
 				},
+				{
+					path: "/notes/:noteID",
+					lazy: () => import("./pages/notes"),
+				}
 			]
 		},
 	],

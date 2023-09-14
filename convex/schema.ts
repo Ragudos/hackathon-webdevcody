@@ -38,7 +38,12 @@ export default defineSchema({
 	users: defineTable({
 		tokenIdentifier: v.string(),
 		name: v.optional(v.string()),
-	}).index("by_token", ["tokenIdentifier"]),
+		image: v.optional(v.string())
+	}).index("by_token", ["tokenIdentifier"])
+	.index("by_name", ["name"])
+	.searchIndex("search_name", {
+		searchField: "name",
+	}),
 
 	notes: defineTable(noteTable)
 		.index("by_title", ["title"])

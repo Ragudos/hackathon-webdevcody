@@ -3,6 +3,38 @@ import { mutation, query } from "./_generated/server";
 import { getUser } from "./users";
 import { category, theme } from "./schema";
 
+export const getNote = query({
+	args: { noteID: v.id("notes"), },
+	handler: async (ctx, { noteID }) => {
+		const user = await getUser(ctx, {});
+
+		if (!user) {
+			return null;
+		}
+
+		const note = await ctx.db.get(noteID);
+
+		if (!note) {
+			return null;
+		}
+
+		if (note.user !== user._id) {
+			if (!note.allowedUsers) {
+				return new Error("You are not allowed to view this content.");
+			} else {
+				for (let idx = 0; idx < note.allowedUsers.length; ++idx) {
+					if (note.allowedUsers[idx].userID === user._id) {
+						return note;
+					}
+				}
+				return new Error("You are not allowed to view this content.");
+			}
+		} else {
+			return note;
+		}
+	}
+});
+
 export const getNotes = query({
 	args: { title: v.optional(v.string()), category: v.optional(category) },
 	handler: async (ctx, { title, category }) => {
@@ -30,14 +62,13 @@ export const getNotes = query({
 			if (!category) {
 				return ctx.db
 					.query("notes").withIndex("by_user", (q) => q.eq("user", user._id))
-					.order("asc")
 					.collect();
 			} else {
 				return ctx.db
 					.query("notes")
 					.withIndex("by_user_and_category", (q) =>
 						q.eq("user", user._id).eq("category", category))
-					.order("asc")
+					.order("desc")
 					.collect();
 			}
 		}

@@ -1,4 +1,4 @@
-import type { Doc, Id } from "convex/_generated/dataModel";
+import type { Doc } from "convex/_generated/dataModel";
 import React from "react";
 import toast from "react-hot-toast";
 import { useMutation, useQuery } from "convex/react";
@@ -18,9 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
+import { DeleteNoteBtn } from "@/components/delete-note-btn";
 
 type NoteThemes = "green" | "pink" | "blue" | "orange" | "purple" | "slate";
 type NoteCategories = "education" | "work" | "story" | "personal";
@@ -183,72 +184,44 @@ const CreateNote: React.FC = () => {
 
 const NoteCard: React.FC<{ note: Doc<"notes"> }> = ({
   note
-}) => {
-  const deleteNote = useMutation(api.notes.deleteNotes);
-  const handleDelete = (noteID: Id<"notes">) => {
-    const response = deleteNote({ noteIDs: noteID });
-    if (response === null || response instanceof Error) {
-      toast.error("Failed to delete note.");
-    } else {
-      toast.success("The note has been deleted.");
-    }
-  };
-
-  return (
-    <div
-      style={{
-        backgroundColor: `hsl(var(--${note.theme}))`,
-        color: `hsl(var(--${note.theme}-foreground))`,
-      }}
-      className="overflow-auto break-words whitespace-pre-wrap p-4 shadow-md shadow-black/20 dark:border border-border rounded-lg"
-    >
-      <div className="flex justify-between text-xs mb-1">
-        <time className="select-none" dateTime={new Date(note._creationTime).toISOString()}>
-          {new Date(note._creationTime).toDateString()}
-        </time>
-        <div className="flex gap-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button className="h-auto w-auto hover:text-inherit hover:bg-accent/20" size="icon" variant="ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>This action cannot be undone. This will
-                permanently delete this note, and all corresponding data related with this note
-                &#40;e.g. messages&#41;.
-              </AlertDialogDescription>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction asChild onClick={() => handleDelete(note._id)}>
-                  <Button variant="destructive">
-                    Delete Anyway
-                  </Button>
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button className="h-auto w-auto hover:text-inherit hover:bg-accent/20" size="icon" variant="ghost">
+}) => (
+  <div
+    style={{
+      backgroundColor: `hsl(var(--${note.theme}))`,
+      color: `hsl(var(--${note.theme}-foreground))`,
+    }}
+    className="overflow-auto break-words whitespace-pre-wrap p-4 shadow-md shadow-black/20 dark:border border-border rounded-lg"
+  >
+    <div className="flex justify-between text-xs mb-1">
+      <time className="select-none" dateTime={new Date(note._creationTime).toISOString()}>
+        {new Date(note._creationTime).toDateString()}
+      </time>
+      <div className="flex gap-2">
+        <DeleteNoteBtn noteID={note._id} />
+        <Button asChild className="h-auto w-auto hover:text-inherit hover:bg-accent/20" size="icon" variant="ghost">
+          <Link
+            to={`/notes/${note._id}`}
+            aria-label="Open Note"
+            title="Open Note"
+            replace
+          >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
-          </Button>
-        </div>
+          </Link>
+        </Button>
       </div>
-      <Heading
-        typeOfHeading="h4"
-        containerStyles="text-start"
-        description={note.description || "Add a descrption to your note..."}
-        descriptionStyles={note.description ? "opacity-90 text-sm lg:text-sm" : "opacity-50 text-sm lg:text-sm"}
-      >
-        {note.title}
-      </Heading>
     </div>
-  );
-};
+    <Heading
+      typeOfHeading="h4"
+      containerStyles="text-start"
+      description={note.description || "Add a descrption to your note..."}
+      descriptionStyles={note.description ? "opacity-90 text-sm lg:text-sm" : "opacity-50 text-sm lg:text-sm"}
+    >
+      {note.title}
+    </Heading>
+  </div>
+);
 
 const LoggedInPage: React.FC = () => {
   const [search, setSearch] = React.useState("");

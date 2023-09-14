@@ -33,11 +33,16 @@ export const store = mutation({
 			if (user.name !== identity.name) {
 				await ctx.db.patch(user._id, { name: identity.name });
 			}
+
+			if (user.image !== identity.pictureUrl) {
+				await ctx.db.patch(user._id, { image: identity.pictureUrl });
+			}
 			return user._id;
 		}
 		// If it's a new identity, create a new `User`.
 		return await ctx.db.insert("users", {
 			name: identity.name!,
+			image: identity.pictureUrl,
 			tokenIdentifier: identity.tokenIdentifier,
 		});
 	},
@@ -57,4 +62,25 @@ export const getUser = internalQuery({
 			)
 			.unique();
 	},
+});
+
+export const searchUser = query({
+	args: { name: v.optional(v.string()) },
+	handler: async (ctx, { name }) => {
+		const user = await getUser(ctx, {});
+
+		if (!user) {
+			return null;
+		}
+
+		if (!name) {
+			return null;
+		}
+
+		return ctx.db.query("users")
+			.withSearchIndex("search_name", (q) =>
+				q.search("name", name))
+			.filter((q) => q.not(q.eq(q.field("tokenIdentifier"), user.tokenIdentifier)))
+			.collect();
+	}
 });

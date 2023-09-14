@@ -110,4 +110,21 @@
   h6 {
     font-size: 1.1875rem;
   }
+
+  .sub-menu-highlight {
+    contain: strict;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    height: 2.25rem;
+
+    transition: 150ms ease;
+
+    transition-property: width, transform, opacity;
+  }
+
+  .strict-contain {
+    contain: strict;
+  }
 }
