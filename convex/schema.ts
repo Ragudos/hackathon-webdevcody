@@ -42,16 +42,27 @@ export default defineSchema({
 
 	notes: defineTable(noteTable)
 		.index("by_title", ["title"])
+		.index("by_category", ["category"])
 		.index("by_user", ["user"])
-		.searchIndex("search_title", {
-			searchField: "title",
-			filterFields: ["category"],
-		}),
+		.index("by_user_and_category", ["user", "category"])
+		.index("by_user_and_title", ["user", "title"])
+		.index("by_user_category_and_title", ["user", "category", "title"]),
 
 	messages: defineTable({
 		senderID: v.id("users"),
-		receiverIDs: v.array(v.id("users")),
-		room: v.optional(v.id("notes")),
+		type: v.union(
+			v.literal("private_message"),
+			v.literal("group_message")
+		),
+		receiverID: v.union(
+			v.id("users"),
+			v.id("notes")
+		),
 		content: v.string(),
+	}).index("by_type", ["type"])
+	.index("by_receiver", ["receiverID"])
+	.searchIndex("content", {
+		searchField: "content",
+		filterFields: ["receiverID", "_creationTime", "type"]
 	}),
 });

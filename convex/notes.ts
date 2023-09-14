@@ -13,28 +13,33 @@ export const getNotes = query({
 		}
 
 		if (title) {
-			return ctx.db
-				.query("notes").withSearchIndex("search_title", (q) => {
-					if (!category) {
-						return q.search("title", title);
-					} else {
-						return q.search("title", title).eq("category", category);
-					}
-				})
-				.filter((q) => q.eq(q.field("user"), user._id))
-				.collect();
+			if (!category) {
+				return ctx.db
+					.query("notes")
+					.withIndex("by_user_and_title", (q) =>
+						q.eq("user", user._id).eq("title", title))
+					.collect();
+			} else {
+				return ctx.db
+					.query("notes")
+					.withIndex("by_user_category_and_title", (q) =>
+						q.eq("user", user._id).eq("category", category).eq("title", title))
+					.collect();
+			}
 		} else {
-			return ctx.db
-				.query("notes").withIndex("by_user")
-				.filter((q) => {
-					if (!category) {
-						return q.eq(q.field("user"), user._id);
-					} else {
-						return q.and(q.eq(q.field("category"), category), q.eq(q.field("user"), user._id));
-					}
-				})
-				.order("asc")
-				.collect();
+			if (!category) {
+				return ctx.db
+					.query("notes").withIndex("by_user", (q) => q.eq("user", user._id))
+					.order("asc")
+					.collect();
+			} else {
+				return ctx.db
+					.query("notes")
+					.withIndex("by_user_and_category", (q) =>
+						q.eq("user", user._id).eq("category", category))
+					.order("asc")
+					.collect();
+			}
 		}
 	},
 });
@@ -60,9 +65,49 @@ export const writeNotes = mutation({
 				category,
 				description,
 				user: user._id,
+				body: "",
+				allowedUsers: []
 			});
 		} catch (error) {
 			return error;
 		}
 	},
+});
+
+export const deleteNotes = mutation({
+	args: { noteIDs: v.union(v.array(v.id("notes")), v.id("notes")) },
+	handler: async (ctx, { noteIDs }) => {
+		try {
+			const user = await getUser(ctx, {});
+
+			if (!user) {
+				return null;
+			}
+
+			if (typeof noteIDs === "string") {
+				const messages = await ctx.db.query("messages")
+					.withIndex("by_receiver", (q) =>
+						q.eq("receiverID", noteIDs))
+					.collect();
+				for await (const msg of messages) {
+					ctx.db.delete(msg._id);
+				}
+				await ctx.db.delete(noteIDs);
+			} else {
+				for await (const id of noteIDs) {
+					const messages = await ctx.db.query("messages")
+						.withIndex("by_receiver", (q) =>
+							q.eq("receiverID", id))
+						.collect();
+					for await (const msg of messages) {
+						ctx.db.delete(msg._id);
+					}
+					ctx.db.delete(id);
+				}
+			}
+
+		} catch (error) {
+			return error;
+		}
+	}
 });

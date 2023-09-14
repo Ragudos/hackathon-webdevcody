@@ -45,7 +45,7 @@ export const SearchBar: React.FC<Props> = ({
 			<div
 				id="searchbar"
 				className={cn("w-0 relative border rounded-lg", {
-					"w-full lg:w-[70%]": toggle,
+					"w-full": toggle,
 				})}
 				aria-expanded={toggle}
 			>
@@ -58,6 +58,7 @@ export const SearchBar: React.FC<Props> = ({
 							onChange={(e) => onChange(e.target.value)}
 							aria-label="Search Bar"
 							className="border-0"
+							autoFocus
 						/>
 						<Button
 							aria-controls="searchbar"
