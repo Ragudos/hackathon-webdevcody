@@ -10,6 +10,8 @@ import { Heading } from "@/components/ui/heading";
 
 import useStoreUser from "@/lib/useStoreUser";
 import { NoteToolBar } from "./notes/note-toolbar";
+import { NoteEditor } from "./notes/note-editors";
+import { NoteBodyEditor } from "./notes/note-body-editor";
 
 export type Note = {
   note: Doc<"notes">;
@@ -111,11 +113,33 @@ const NotePage: React.FC<Note> = ({ note }) => {
               isCurrentUserNoteOwner={isCurrentUserNoteOwner}
             />
           </header>
-          <article className="min-h-[100dvh] p-8 border-t">
+          <article className="min-h-[100dvh] p-4 md:p-8 border-t">
             {mode === "read" && (
               <React.Fragment>
-                <Heading typeOfHeading="h1">{note.title}</Heading>
+                <Heading
+                  typeOfHeading="h1"
+                  containerStyles="text-start"
+                  descriptionStyles={!note.description ? "opacity-40" : undefined}
+                  description={note.description || "Add a description to your note..."}
+                >
+                  {note.title}
+                </Heading>
+
+                <div className="mt-8 relative">
+                  <NoteBodyEditor
+                    noteBody={note.body}
+                    mode={mode}
+                  />
+                </div>
               </React.Fragment>
+            )}
+
+            {mode === "write" && (
+              <NoteEditor
+                isWithPermissionToWrite={doesUserHaveWriteAccess}
+                note={note}
+                setMode={setMode}
+              />
             )}
           </article>
         </div>

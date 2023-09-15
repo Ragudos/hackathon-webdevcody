@@ -36,7 +36,7 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
           noteID: note._id,
         });
 
-        if (!response || response instanceof Error) {
+        if (response === null || response instanceof Error) {
           toast.error("Something went wrong.");
         } else {
           toast.success("Successfully invited " + user.name);
@@ -44,7 +44,7 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
       } else {
         const response = updateAllowedUsers({ users: [obj], noteID: note._id });
 
-        if (!response || response instanceof Error) {
+        if (response === null || response instanceof Error) {
           toast.error("Something went wrong.");
         } else {
           toast.success("Successfully invited " + user.name);
@@ -55,7 +55,7 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
   );
 
   const onAccessChange = React.useCallback(
-    (userID: Id<"users">, value: "read" | "write" | "remove") => {
+    async (userID: Id<"users">, value: "read" | "write" | "remove") => {
       if (value === "remove") {
         const newAllowedUsers = new Array<AllowedUserID>();
         for (let idx = 0; note.allowedUsers && idx < note.allowedUsers.length; ++idx) {
@@ -63,8 +63,8 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
             newAllowedUsers.push(note.allowedUsers[idx]);
           }
         }
-        const response = updateAllowedUsers({ users: newAllowedUsers, noteID: note._id });
-        if (!response || response instanceof Error) {
+        const response = await updateAllowedUsers({ users: newAllowedUsers, noteID: note._id });
+        if (response === null || response instanceof Error) {
           toast.error("Something went wrong.");
         } else {
           toast.success("Successfully revoked access to this user.");
@@ -83,8 +83,8 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
             });
           }
         }
-        const response = updateAllowedUsers({ users: newAllowedUsers, noteID: note._id });
-        if (!response || response instanceof Error) {
+        const response = await updateAllowedUsers({ users: newAllowedUsers, noteID: note._id });
+        if (response === null || response instanceof Error) {
           toast.error("Something went wrong.");
         } else {
           toast.success("Successfully changed the access of this user to read-only.");
@@ -103,8 +103,8 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
             });
           }
         }
-        const response = updateAllowedUsers({ users: newAllowedUsers, noteID: note._id });
-        if (!response || response instanceof Error) {
+        const response = await updateAllowedUsers({ users: newAllowedUsers, noteID: note._id });
+        if (response === null || response instanceof Error) {
           toast.error("Something went wrong.");
         } else {
           toast.success("Successfully changed the access of this user to edit this note.");
@@ -117,18 +117,22 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
       <SearchUser onResultClick={handleInviteUser} />
 
       <section className="overflow-y-auto max-h-[15rem] mt-4">
-        <Heading typeOfHeading="h6">Users with access</Heading>
-        <div className="mt-4 flex flex-col gap-4">
-          {allowedUsers &&
-            allowedUsers.map((accessObj) => (
-              <AllowedUserCard
-                key={accessObj.user._id}
-                accessType={accessObj.accessType}
-                user={accessObj.user}
-                onAccessChange={onAccessChange}
-              />
-            ))}
-        </div>
+        {allowedUsers && allowedUsers.length > 0 && (
+          <React.Fragment>
+            <Heading typeOfHeading="h6">Users with access</Heading>
+            <div className="mt-4 flex flex-col gap-4">
+              {
+                allowedUsers.map((accessObj) => (
+                  <AllowedUserCard
+                    key={accessObj.user._id}
+                    accessType={accessObj.accessType}
+                    user={accessObj.user}
+                    onAccessChange={onAccessChange}
+                  />
+                ))}
+            </div>
+          </React.Fragment>
+        )}
       </section>
     </React.Fragment>
   );

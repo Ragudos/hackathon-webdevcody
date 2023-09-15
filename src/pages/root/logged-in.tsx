@@ -40,13 +40,13 @@ const CreateNote: React.FC = () => {
 
 	const addNote = useMutation(api.notes.writeNotes);
 
-	const handleCreation = (e: React.FormEvent) => {
+	const handleCreation = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setToggle(false);
 
 		const loadingToast = toast.loading("Adding a new note titled, " + title);
 
-		const response = addNote({ title, description, theme, category });
+		const response = await addNote({ title, description, theme, category });
 		setTitle("");
 		setDescription("");
 

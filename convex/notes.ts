@@ -84,6 +84,24 @@ export const getNotes = query({
 	},
 });
 
+export const getAllNotesSharedWithUser = query({
+	handler: async (ctx) => {
+		const user = await getUser(ctx, {});
+
+		if (!user) {
+			return null;
+		}
+
+		const notes = await ctx.db.query("notes")
+		.withIndex("shared_with_user", (q) =>
+		q.eq("user", user._id)
+		.eq("allowedUsers", [{ userID: user._id, access: "read" }, { userID: user._id, access: "write" }]))
+		.collect();
+
+		return notes;
+	}
+});
+
 export const writeNotes = mutation({
 	args: {
 		title: v.string(),
@@ -99,7 +117,7 @@ export const writeNotes = mutation({
 				return null;
 			}
 
-			return await ctx.db.insert("notes", {
+			await ctx.db.insert("notes", {
 				title,
 				theme,
 				category,
@@ -109,10 +127,48 @@ export const writeNotes = mutation({
 				accessType: "invite-only",
 				allowedUsers: [],
 			});
+			return "success";
 		} catch (error) {
 			return error;
 		}
 	},
+});
+
+export const updateNote = mutation({
+	args: { title: v.string(), description: v.optional(v.string()), body: v.optional(v.string()), noteID: v.id("notes") },
+	handler: async (ctx, { title, description, body, noteID }) => {
+		const user = await getUser(ctx, {});
+
+		if (!user) {
+			return null;
+		}
+
+		const note = await ctx.db.get(noteID);
+
+		if (!note) {
+			return null;
+		}
+
+		if (note.user !== user._id) {
+			let num = 0;
+			for (let idx = 0; note.allowedUsers && idx < note.allowedUsers.length; ++idx) {
+				if (
+					note.allowedUsers[idx].userID === user._id &&
+					note.allowedUsers[idx].access === "write"
+				) {
+					num += 1;
+					break;
+				}
+			}
+
+			if (num === 0) {
+				return null;
+			}
+		}
+
+		await ctx.db.patch(noteID, { title, description, body });
+		return "success";
+	}
 });
 
 export const deleteNotes = mutation({
@@ -191,6 +247,8 @@ export const updateAllowedUsers = mutation({
 			}
 
 			await ctx.db.patch(noteID, { allowedUsers: users });
+
+			return "success";
 		} catch (error) {
 			return error;
 		}

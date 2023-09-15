@@ -59,7 +59,8 @@ export default defineSchema({
 		.index("by_user", ["user"])
 		.index("by_user_and_category", ["user", "category"])
 		.index("by_user_and_title", ["user", "title"])
-		.index("by_user_category_and_title", ["user", "category", "title"]),
+		.index("by_user_category_and_title", ["user", "category", "title"])
+		.index("shared_with_user", ["user", "allowedUsers"]),
 
 	messages: defineTable({
 		senderID: v.id("users"),
