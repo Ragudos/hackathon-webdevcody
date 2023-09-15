@@ -77,10 +77,12 @@ export const searchUser = query({
 			return null;
 		}
 
-		return ctx.db.query("users")
-			.withSearchIndex("search_name", (q) =>
-				q.search("name", name))
-			.filter((q) => q.not(q.eq(q.field("tokenIdentifier"), user.tokenIdentifier)))
+		return ctx.db
+			.query("users")
+			.withSearchIndex("search_name", (q) => q.search("name", name))
+			.filter((q) =>
+				q.not(q.eq(q.field("tokenIdentifier"), user.tokenIdentifier)),
+			)
 			.collect();
-	}
+	},
 });

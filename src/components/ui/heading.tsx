@@ -37,7 +37,12 @@ export const Heading: React.FC<Props> = ({
 }) => {
 	if (description) {
 		return (
-			<div className={cn("break-words overflow-auto whitespace-pre-wrap flex flex-col gap-1 text-center", containerStyles)}>
+			<div
+				className={cn(
+					"break-words overflow-auto whitespace-pre-wrap flex flex-col gap-1 text-center",
+					containerStyles,
+				)}
+			>
 				{getHeading(typeOfHeading, children)}
 				<p className={cn("lg:text-lg", descriptionStyles)}>{description}</p>
 			</div>

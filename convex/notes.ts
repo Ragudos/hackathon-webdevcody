@@ -1,10 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getUser } from "./users";
-import { category, theme } from "./schema";
+import { allowedUsers, category, theme } from "./schema";
+import { Doc } from "./_generated/dataModel";
 
 export const getNote = query({
-	args: { noteID: v.id("notes"), },
+	args: { noteID: v.id("notes") },
 	handler: async (ctx, { noteID }) => {
 		const user = await getUser(ctx, {});
 
@@ -19,20 +20,24 @@ export const getNote = query({
 		}
 
 		if (note.user !== user._id) {
-			if (!note.allowedUsers) {
-				return new Error("You are not allowed to view this content.");
-			} else {
+			if (note.accessType === "invite-only") {
+				if (!note.allowedUsers) {
+					return null;
+				}
+
 				for (let idx = 0; idx < note.allowedUsers.length; ++idx) {
 					if (note.allowedUsers[idx].userID === user._id) {
 						return note;
 					}
 				}
-				return new Error("You are not allowed to view this content.");
+				return null;
 			}
+
+			return note;
 		} else {
 			return note;
 		}
-	}
+	},
 });
 
 export const getNotes = query({
@@ -49,25 +54,29 @@ export const getNotes = query({
 				return ctx.db
 					.query("notes")
 					.withIndex("by_user_and_title", (q) =>
-						q.eq("user", user._id).eq("title", title))
+						q.eq("user", user._id).eq("title", title),
+					)
 					.collect();
 			} else {
 				return ctx.db
 					.query("notes")
 					.withIndex("by_user_category_and_title", (q) =>
-						q.eq("user", user._id).eq("category", category).eq("title", title))
+						q.eq("user", user._id).eq("category", category).eq("title", title),
+					)
 					.collect();
 			}
 		} else {
 			if (!category) {
 				return ctx.db
-					.query("notes").withIndex("by_user", (q) => q.eq("user", user._id))
+					.query("notes")
+					.withIndex("by_user", (q) => q.eq("user", user._id))
 					.collect();
 			} else {
 				return ctx.db
 					.query("notes")
 					.withIndex("by_user_and_category", (q) =>
-						q.eq("user", user._id).eq("category", category))
+						q.eq("user", user._id).eq("category", category),
+					)
 					.order("desc")
 					.collect();
 			}
@@ -97,7 +106,8 @@ export const writeNotes = mutation({
 				description,
 				user: user._id,
 				body: "",
-				allowedUsers: []
+				accessType: "invite-only",
+				allowedUsers: [],
 			});
 		} catch (error) {
 			return error;
@@ -116,9 +126,9 @@ export const deleteNotes = mutation({
 			}
 
 			if (typeof noteIDs === "string") {
-				const messages = await ctx.db.query("messages")
-					.withIndex("by_receiver", (q) =>
-						q.eq("receiverID", noteIDs))
+				const messages = await ctx.db
+					.query("messages")
+					.withIndex("by_receiver", (q) => q.eq("receiverID", noteIDs))
 					.collect();
 				for await (const msg of messages) {
 					ctx.db.delete(msg._id);
@@ -126,9 +136,9 @@ export const deleteNotes = mutation({
 				await ctx.db.delete(noteIDs);
 			} else {
 				for await (const id of noteIDs) {
-					const messages = await ctx.db.query("messages")
-						.withIndex("by_receiver", (q) =>
-							q.eq("receiverID", id))
+					const messages = await ctx.db
+						.query("messages")
+						.withIndex("by_receiver", (q) => q.eq("receiverID", id))
 						.collect();
 					for await (const msg of messages) {
 						ctx.db.delete(msg._id);
@@ -136,9 +146,53 @@ export const deleteNotes = mutation({
 					ctx.db.delete(id);
 				}
 			}
-
 		} catch (error) {
 			return error;
 		}
-	}
+	},
+});
+
+export const getUsersWithAccess = query({
+	args: { users: allowedUsers },
+	handler: async (ctx, { users }) => {
+		const user = await getUser(ctx, {});
+
+		if (!user || !users) {
+			return null;
+		}
+
+		const foundUsers = new Array<{
+			user: Doc<"users">;
+			accessType: "write" | "read";
+		}>();
+
+		for await (const user of users) {
+			const foundUser = await ctx.db.get(user.userID);
+			if (foundUser) {
+				foundUsers.push({
+					user: foundUser,
+					accessType: user.access,
+				});
+			}
+		}
+
+		return foundUsers;
+	},
+});
+
+export const updateAllowedUsers = mutation({
+	args: { users: allowedUsers, noteID: v.id("notes") },
+	handler: async (ctx, { users, noteID }) => {
+		try {
+			const user = await getUser(ctx, {});
+
+			if (!user || !users) {
+				return null;
+			}
+
+			await ctx.db.patch(noteID, { allowedUsers: users });
+		} catch (error) {
+			return error;
+		}
+	},
 });

@@ -9,7 +9,7 @@ const router = createBrowserRouter(
 			children: [
 				{
 					path: "/",
-					lazy: () => import("./pages/index")
+					lazy: () => import("./pages/index"),
 				},
 				{
 					path: "/profile/*",
@@ -18,8 +18,8 @@ const router = createBrowserRouter(
 				{
 					path: "/notes/:noteID",
 					lazy: () => import("./pages/notes"),
-				}
-			]
+				},
+			],
 		},
 	],
 	{
