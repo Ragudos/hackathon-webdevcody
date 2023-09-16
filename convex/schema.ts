@@ -70,6 +70,7 @@ export default defineSchema({
 	})
 		.index("by_type", ["type"])
 		.index("by_receiver", ["receiverID"])
+		.index("by_receiver_and_sender", ["type", "receiverID", "senderID"])
 		.searchIndex("content", {
 			searchField: "content",
 			filterFields: ["receiverID", "_creationTime", "type"],

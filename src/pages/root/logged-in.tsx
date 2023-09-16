@@ -241,14 +241,15 @@ const NoteCard: React.FC<{ note: Doc<"notes"> }> = ({ note }) => (
 		<Heading
 			typeOfHeading="h4"
 			containerStyles="text-start"
+			className={!note.title ? "opacity-60" : undefined}
 			description={note.description || "Add a descrption to your note..."}
 			descriptionStyles={
 				note.description
 					? "opacity-90 text-sm lg:text-sm"
-					: "opacity-50 text-sm lg:text-sm"
+					: "opacity-60 text-sm lg:text-sm"
 			}
 		>
-			{note.title}
+			{note.title || "Add a title to your note..."}
 		</Heading>
 	</div>
 );
