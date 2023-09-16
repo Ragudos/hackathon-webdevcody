@@ -4,6 +4,9 @@ import { getUser } from "./users";
 import { allowedUsers, category, theme } from "./schema";
 import { Doc } from "./_generated/dataModel";
 
+const EMPTY_BODY_JSON =
+	'{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+
 export const getNote = query({
 	args: { noteID: v.id("notes") },
 	handler: async (ctx, { noteID }) => {
@@ -22,20 +25,33 @@ export const getNote = query({
 		if (note.user !== user._id) {
 			if (note.accessType === "invite-only") {
 				if (!note.allowedUsers) {
-					return null;
+					return "You have no permission to read this note.";
 				}
 
 				for (let idx = 0; idx < note.allowedUsers.length; ++idx) {
 					if (note.allowedUsers[idx].userID === user._id) {
-						return note;
+						return {
+							note: note,
+							isCurrentUserNoteOwner: false,
+							doesUserHaveWriteAccess:
+								note.allowedUsers[idx].access === "write",
+						};
 					}
 				}
-				return null;
+				return "You have no permission to read this note.";
 			}
 
-			return note;
+			return {
+				note: note,
+				isCurrentUserNoteOwner: false,
+				doesUserHaveWriteAccess: note.accessType === "anyone-can-write",
+			};
 		} else {
-			return note;
+			return {
+				note: note,
+				isCurrentUserNoteOwner: true,
+				doesUserHaveWriteAccess: true,
+			};
 		}
 	},
 });
@@ -127,7 +143,7 @@ export const writeNotes = mutation({
 				category,
 				description,
 				user: user._id,
-				body: "",
+				body: EMPTY_BODY_JSON,
 				accessType: "invite-only",
 				allowedUsers: [],
 			});
