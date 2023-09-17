@@ -1,11 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getUser } from "./users";
-import { allowedUsers, category, theme } from "./schema";
+import { allowedUsers, category, noteTheme } from "./schema";
 import { Doc } from "./_generated/dataModel";
 
 const EMPTY_BODY_JSON =
-	'{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+	"{\"root\":{\"children\":[{\"children\":[],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}";
 
 export const getNote = query({
 	args: { noteID: v.id("notes") },
@@ -19,7 +19,7 @@ export const getNote = query({
 		const note = await ctx.db.get(noteID);
 
 		if (!note) {
-			return null;
+			return undefined;
 		}
 
 		if (note.user !== user._id) {
@@ -126,31 +126,28 @@ export const writeNotes = mutation({
 	args: {
 		title: v.string(),
 		description: v.optional(v.string()),
-		theme: theme,
+		noteTheme: noteTheme,
 		category: category,
 	},
-	handler: async (ctx, { title, description, theme, category }) => {
-		try {
-			const user = await getUser(ctx, {});
+	handler: async (ctx, { title, description, noteTheme, category }) => {
+		const user = await getUser(ctx, {});
 
-			if (!user) {
-				return null;
-			}
-
-			await ctx.db.insert("notes", {
-				title,
-				theme,
-				category,
-				description,
-				user: user._id,
-				body: EMPTY_BODY_JSON,
-				accessType: "invite-only",
-				allowedUsers: [],
-			});
-			return "success";
-		} catch (error) {
-			return error;
+		if (!user) {
+			return null;
 		}
+
+		await ctx.db.insert("notes", {
+			title,
+			noteTheme,
+
+			category,
+			description,
+			user: user._id,
+			body: EMPTY_BODY_JSON,
+			accessType: "invite-only",
+			allowedUsers: [],
+		});
+		return "success";
 	},
 });
 

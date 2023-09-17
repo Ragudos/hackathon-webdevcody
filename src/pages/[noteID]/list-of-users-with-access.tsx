@@ -1,13 +1,15 @@
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+
 import { api } from "../../../convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
 
 import React from "react";
 import toast from "react-hot-toast";
 
 import { Note } from "../notes";
+import { AllowedUserCard } from "../notes/allowed-user-card";
+
 import { SearchUser } from "@/components/search-user";
-import { AllowedUserCard } from "./allowed-user-card";
 import { Heading } from "@/components/ui/heading";
 
 type AllowedUserID = {
@@ -15,7 +17,7 @@ type AllowedUserID = {
 	access: "write" | "read";
 };
 
-export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
+const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
 	const allowedUsers = useQuery(api.notes.getUsersWithAccess, {
 		users: note.allowedUsers,
 	});
@@ -169,3 +171,4 @@ export const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
 });
 
 ListOfUsersWithAccess.displayName = "ListOfUsersWithAccess";
+export default ListOfUsersWithAccess;

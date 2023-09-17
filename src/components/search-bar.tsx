@@ -14,7 +14,7 @@ export const SearchBar: React.FC<Props> = ({
 	value,
 	placeholder,
 }) => {
-	const [toggle, setToggle] = React.useState(false);
+	const [toggle, setToggle] = React.useState(value ? true : false);
 
 	return (
 		<div className="my-2 relative w-full min-w-[2.25rem] min-h-[2.25rem]">

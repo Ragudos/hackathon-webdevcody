@@ -120,6 +120,7 @@ export const NoteEditor: React.FC<Props> = React.memo(
 							setState={setState}
 							styles="p-2"
 							placeholderStyles="p-2"
+							noteTheme={note.noteTheme}
 						/>
 					</div>
 				</div>

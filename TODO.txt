@@ -1,1 +1,3 @@
  Use search query for searching/filtering of notes.
+
+ MAKE REALTIME COLLABORATION EDITING OF NOTES FUNCTIONAL

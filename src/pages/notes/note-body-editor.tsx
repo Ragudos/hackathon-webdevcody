@@ -1,8 +1,10 @@
+import type { noteTheme } from "convex/schema";
 import {
 	$isRangeSelection,
 	TextFormatType,
 	type EditorState,
 	TextNode,
+	EditorThemeClasses,
 } from "lexical";
 import React from "react";
 
@@ -25,6 +27,7 @@ import { TextColorPlugin } from "@/components/editor/text-color";
 type Props = {
 	noteBody: string;
 	mode: "read" | "write";
+	noteTheme?: typeof noteTheme.type
 	setState?: (state: EditorState) => void;
 	styles?: string;
 	placeholderStyles?: string;
@@ -37,7 +40,7 @@ const theme = {
 		underline: "underline",
 		strikethrough: "line-through",
 	},
-};
+} as EditorThemeClasses;
 
 const onError = (error: Error) => {
 	console.error(error);
@@ -74,6 +77,7 @@ const LiveUpdatePlugin = ({
 
 export const NoteBodyEditor: React.FC<Props> = ({
 	noteBody,
+	noteTheme,
 	mode,
 	setState,
 	styles,
@@ -92,6 +96,7 @@ export const NoteBodyEditor: React.FC<Props> = ({
 		Array<TextFormatType>
 	>([]);
 	const [activeColor, setActiveColor] = React.useState<string>("hsla(0, 0%, 0%, 1)");
+	const [activeBg, setActiveBg] = React.useState<string>(`hsl(var(--${noteTheme})`);
 
 	const onChange = React.useCallback(
 		(state: EditorState) => {
@@ -104,11 +109,22 @@ export const NoteBodyEditor: React.FC<Props> = ({
 			if ($isRangeSelection(selection)) {
 				state.read(() => {
 
-					selection.getNodes().map((node) => {
+					if (!selection.style) {
+						setActiveColor("hsla(0, 0%, 0%, 1)");
+						setActiveBg(`hsl(var(--${noteTheme}))`);
+					}
+
+					selection.getNodes().forEach((node) => {
 						if (node instanceof TextNode) {
-							const style = node.getStyle();
-							console.log(style.split("color: "));
-							setActiveColor(`${style.split("color: ")[1] ?? "hsla(0, 0%, 0%, 1)"}`);
+							const nodeStyle = node.getStyle();
+							const prevBackground = nodeStyle.split("background-color: ");
+              if (prevBackground[0]) {
+								const prevColor = prevBackground[0].split("color: ")[1];
+								setActiveColor(prevColor ?? "hsla(0, 0%, 0%, 1)");
+							} else {
+								setActiveColor("hsla(0, 0%, 0%, 1)");
+							}
+							setActiveBg(prevBackground[1] ?? `hsl(var(--${noteTheme})`);
 						}
 					});
 
@@ -170,7 +186,7 @@ export const NoteBodyEditor: React.FC<Props> = ({
 				});
 			}
 		},
-		[setState],
+		[noteTheme, setState],
 	);
 
 	return (
@@ -187,6 +203,8 @@ export const NoteBodyEditor: React.FC<Props> = ({
 						<TextColorPlugin
 							setActiveColor={setActiveColor}
 							activeColor={activeColor}
+							activeBg={activeBg}
+							setActiveBg={setActiveBg}
 						/>
 					</section>
 					<LiveUpdatePlugin noteBody={noteBody} />
@@ -195,6 +213,7 @@ export const NoteBodyEditor: React.FC<Props> = ({
 						<RichTextPlugin
 							contentEditable={
 								<ContentEditable
+									autoFocus
 									className={cn(
 										"relative z-10 min-h-[10rem] focus:outline-none focus:ring-0",
 										styles,

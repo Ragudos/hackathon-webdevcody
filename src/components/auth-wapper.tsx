@@ -15,5 +15,5 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({
 		return <Navigate to="/" />;
 	}
 
-	return <></>;
+	return null;
 };

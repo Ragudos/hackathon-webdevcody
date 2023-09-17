@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Note } from "../notes";
 import { Button } from "@/components/ui/button";
-import { ListOfUsersWithAccess } from "./list-of-users-with-access";
+import { ListOfUsersWithAccess } from "../[noteID]/list-of-users-with-access";
 
 type ToolBarProps = {
 	setMode: React.Dispatch<React.SetStateAction<"read" | "write">>;

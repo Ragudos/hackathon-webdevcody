@@ -15,6 +15,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as notes from "../notes";
+import type * as presence from "../presence";
 import type * as users from "../users";
 
 /**
@@ -27,6 +28,7 @@ import type * as users from "../users";
  */
 declare const fullApi: ApiFromModules<{
   notes: typeof notes;
+  presence: typeof presence;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

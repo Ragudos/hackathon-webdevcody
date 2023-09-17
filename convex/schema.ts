@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-export const theme = v.union(
+export const noteTheme = v.union(
 	v.literal("green"),
 	v.literal("pink"),
 	v.literal("blue"),
@@ -31,7 +31,8 @@ export const noteTable = {
 	category,
 	description: v.optional(v.string()),
 	body: v.optional(v.string()),
-	theme,
+	noteTheme: noteTheme,
+	theme: v.optional(noteTheme),
 	user: v.id("users"),
 	allowedUsers,
 	accessType: v.union(
@@ -62,10 +63,24 @@ export default defineSchema({
 		.index("by_user_category_and_title", ["user", "category", "title"])
 		.index("shared_with_user", ["user", "allowedUsers"]),
 
+	chatRooms: defineTable({
+		users: v.array(v.object({
+			userID: v.id("users"),
+			role: v.union(
+				v.literal("owner"),
+				v.literal("admin"),
+				v.literal("member")
+			)
+		})),
+		ownerID: v.id("users"),
+		noteID: v.optional(v.id("notes"))
+	})
+		.index("by_note_id_and_owner_id", ["noteID", "ownerID"]),
+
 	messages: defineTable({
 		senderID: v.id("users"),
 		type: v.union(v.literal("private_message"), v.literal("group_message")),
-		receiverID: v.union(v.id("users"), v.id("notes")),
+		receiverID: v.union(v.id("users"), v.id("chatRooms"), v.id("notes")),
 		content: v.string(),
 	})
 		.index("by_type", ["type"])
@@ -75,4 +90,16 @@ export default defineSchema({
 			searchField: "content",
 			filterFields: ["receiverID", "_creationTime", "type"],
 		}),
+
+	presence: defineTable({
+		userID: v.id("users"),
+		roomID: v.union(
+			v.id("chatRooms"),
+			v.id("notes")
+		),
+		updatedAt: v.number(),
+		data: v.any()
+	})
+		.index("by_room_updated", ["roomID", "updatedAt"])
+		.index("by_user_room", ["userID", "roomID"])
 });

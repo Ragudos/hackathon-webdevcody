@@ -3,6 +3,7 @@ import { Outlet, isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import { Heading } from "../components/ui/heading";
 import { Header } from "../components/header";
+import BackButton from "@/components/back-button";
 
 export const Component: React.FC = () => (
 	<React.Fragment>
@@ -23,7 +24,7 @@ export const ErrorBoundary = () => {
 		<React.Fragment>
 			<Header />
 			<main className="grid place-items-center h-screen text-center">
-				<div className="flex flex-col gap-8">
+				<div className="flex flex-col gap-8 container">
 					{isRouteErrorResponse(error) ? (
 						<Heading typeOfHeading="h1" description={error.statusText}>
 							{error.status}
@@ -33,6 +34,10 @@ export const ErrorBoundary = () => {
 							{error instanceof Error ? error.message : error}
 						</Heading>
 					)}
+
+					<div>
+						<BackButton />
+					</div>
 				</div>
 			</main>
 		</React.Fragment>

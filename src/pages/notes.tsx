@@ -2,16 +2,16 @@ import type { Doc, Id } from "convex/_generated/dataModel";
 
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 import { AuthWrapper } from "@/components/auth-wapper";
-import { useQuery } from "convex/react";
 import { Heading } from "@/components/ui/heading";
 
 import { NoteToolBar } from "./notes/note-toolbar";
 import { NoteEditor } from "./notes/note-editors";
 import { NoteBodyEditor } from "./notes/note-body-editor";
-import toast from "react-hot-toast";
 
 export type Note = {
 	note: Doc<"notes">;
@@ -28,9 +28,9 @@ export type AllowedUser = {
 };
 
 const EMPTY_BODY_JSON =
-	'{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+	"{\"root\":{\"children\":[{\"children\":[],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}";
 
-export const Component = () => {
+export const Component: React.FC = () => {
 	const { noteID } = useParams();
 
 	const note = useQuery(api.notes.getNote, { noteID: noteID as Id<"notes"> });
@@ -90,8 +90,8 @@ const NotePage: React.FC<Note & NotePageProps> = ({
 	return (
 		<div
 			style={{
-				backgroundColor: `hsl(var(--${note.theme}) / 0.9)`,
-				color: `hsl(var(--${note.theme}-foreground))`,
+				backgroundColor: `hsl(var(--${note.noteTheme}))`,
+				color: `hsl(var(--${note.noteTheme}-foreground))`,
 			}}
 			className="dark:border shadow-black/20 shadow-lg rounded-lg overflow-hidden"
 		>
@@ -108,7 +108,7 @@ const NotePage: React.FC<Note & NotePageProps> = ({
 					<React.Fragment>
 						<div
 							style={{
-								color: `hsl(var(--${note.theme}-foreground))`,
+								color: `hsl(var(--${note.noteTheme}-foreground))`,
 							}}
 						>
 							<Heading
@@ -127,7 +127,7 @@ const NotePage: React.FC<Note & NotePageProps> = ({
 						<div
 							className="mt-8 relative"
 							style={{
-								color: `hsl(var(--${note.theme}-foreground))`,
+								color: `hsl(var(--${note.noteTheme}-foreground))`,
 							}}
 						>
 							<NoteBodyEditor noteBody={body} mode={mode} />
