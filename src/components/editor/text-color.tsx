@@ -4,7 +4,6 @@ import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { $getSelection, $isRangeSelection, TextNode, } from "lexical";
-import { ColorWheelIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { Heading } from "../ui/heading";
 
@@ -127,7 +126,6 @@ export const TextColorPlugin: React.FC<Props> = ({
     },
     [editor, setActiveBg]
   );
-
 
   return (
     <Toolbar.Root>

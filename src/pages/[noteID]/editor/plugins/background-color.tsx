@@ -1,37 +1,39 @@
-import { Button } from "@/components/ui/button";
-import { Heading } from "@/components/ui/heading";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RGB, colors } from "@/consts";
-import { rgbToHex } from "@/lib/utils";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import React from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import * as Toolbar from "@radix-ui/react-toolbar";
+import { Input } from "@/components/ui/input";
+import { Heading } from "@/components/ui/heading";
+import { rgbToHex } from "@/lib/utils";
+import { RGB, colors } from "@/consts";
+import { Button } from "@/components/ui/button";
 import { $getSelection, $isRangeSelection, TextNode } from "lexical";
-import React from "react";
+import { ColorWheelIcon } from "@radix-ui/react-icons";
 
 type Props = {
-  activeTextColor: RGB | undefined,
-  setActiveTextColor: React.Dispatch<React.SetStateAction<RGB | undefined>>
+  activeBgColor: RGB | undefined,
+  setActiveBgColor: React.Dispatch<React.SetStateAction<RGB | undefined>>
 }
 
-export const TextColorPlugin: React.FC<Props> = React.memo(
-  ({ activeTextColor, setActiveTextColor }) => {
+export const BackgroundColorPlugin: React.FC<Props> = React.memo(
+  ({ activeBgColor, setActiveBgColor }) => {
     const [editor] = useLexicalComposerContext();
-    const [chosenColorInHex, setChosenColorInHex] = React.useState<string>(rgbToHex(activeTextColor ?? [0, 0, 0]));
-    const changeTextRef = React.useRef<HTMLDivElement>(null);
+    const [chosenColorInHex, setChosenColorInHex] = React.useState(rgbToHex(activeBgColor));
+
+    const changeBgRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
-      if (!changeTextRef.current) {
+      if (!changeBgRef.current) {
         return;
       }
 
-      const el = changeTextRef.current;
-      const currColor =  (activeTextColor ? `rgb(${activeTextColor[0]}, ${activeTextColor[1]}, ${activeTextColor[2]})` : "rgb(0, 0, 0)");
+      const el = changeBgRef.current;
+      const currColor = (activeBgColor ? `rgb(${activeBgColor[0]}, ${activeBgColor[1]}, ${activeBgColor[2]})` : "rgb(0, 0, 0)");
       if (el.style.backgroundColor !== currColor) {
         el.style.backgroundColor = currColor;
       }
-    }, [activeTextColor]);
+    }, [activeBgColor]);
 
     const changeColor = React.useCallback(
       (color: RGB) => {
@@ -39,37 +41,29 @@ export const TextColorPlugin: React.FC<Props> = React.memo(
           const selection = $getSelection();
           const isInRange = $isRangeSelection(selection);
           if (isInRange) {
-            // selection.isBackward()
-            // means that the user highlighted a text from the end
-            // of a node backwards.
-  
-            // IF A SPECIFIC CHUNK OF TEXT IS HIGHLIGHTED,
-            // THAT MEANS THE SELECTION IS NOT COLLAPSED,
-  
-            // IF SO, WE GET ALL NODES FOR THIS SELECTION
-            // OR LINE (ParagraphNode) AND
-            // FOR ALL SELECTED TEXT NODE, WE SET A STYLE TO IT.
             if (!selection.isCollapsed()) {
               selection.extract().forEach((node) => {
                 if (node instanceof TextNode && node.isSelected(selection)) {
                   const nodeStyle = node.getStyle();
-                  const prevBackground = nodeStyle.split("background-color: ")[1];
-                  node.setStyle(`color: rgb(${color[0]}, ${color[1]}, ${color[2]});${prevBackground ? ` background-color: ${prevBackground}` : ""}`);
+                  const prevBackground = nodeStyle.split("background-color: ");
+                  const prevColor = prevBackground[0].split("color: ")[1];
+                  node.setStyle(`${prevColor ? `color: ${prevColor} ` : ""}background-color: rgb(${color[0]}, ${color[1]}, ${color[2]});`);
                 }
               });
             }
             const style = selection.style;
-            const prevBackground = style.split("background-color: ")[1];
-            selection.setStyle(`color: rgb(${color[0]}, ${color[1]}, ${color[2]});${prevBackground ? ` background-color: ${prevBackground}` : ""}`);
+            const prevBackground = style.split("background-color: ");
+            const prevColor = prevBackground[0].split("color: ")[1];
+            selection.setStyle(`${prevColor ? `color: ${prevColor} ` : ""}background-color: rgb(${color[0]}, ${color[1]}, ${color[2]});`);
           }
         }, {
           onUpdate: () => {
-            setActiveTextColor(color);
+            setActiveBgColor(color);
             setChosenColorInHex(rgbToHex(color));
           }
         });
       },
-      [editor, setActiveTextColor, setChosenColorInHex]
+      [editor, setActiveBgColor, setChosenColorInHex]
     );
 
     return (
@@ -82,10 +76,10 @@ export const TextColorPlugin: React.FC<Props> = React.memo(
                 aria-label="Text Color"
                 className="text-xs w-6 h-6 p-0 px-1 hover:text-inherit hover:bg-accent/10 rounded-sm"
               >
-                <span className="font-bold select-none text-xs">A</span>
+                <ColorWheelIcon className="w-4 h-4" />
                 <div
                   className="w-full h-[0.1rem]"
-                  ref={changeTextRef}
+                  ref={changeBgRef}
                 />
               </Toolbar.Button>
             </PopoverTrigger>
@@ -136,4 +130,4 @@ export const TextColorPlugin: React.FC<Props> = React.memo(
   }
 );
 
-TextColorPlugin.displayName = "TextColorPlugin";
+BackgroundColorPlugin.displayName = "BackgroundColorPlugin";

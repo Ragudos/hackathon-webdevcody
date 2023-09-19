@@ -17,7 +17,8 @@ const theme = {
     italic: "italic",
     underline: "underline",
     strikethrough: "line-through",
-    underlineStrikethrough: "underline line-through"
+    underlineStrikethrough: "underline line-through",
+    code: "p-1 bg-black"
   },
 } as EditorThemeClasses;
 

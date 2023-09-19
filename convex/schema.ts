@@ -27,7 +27,7 @@ export const allowedUsers = v.optional(
 );
 
 export const noteTable = {
-	title: v.string(),
+	title: v.optional(v.string()),
 	category,
 	description: v.optional(v.string()),
 	body: v.optional(v.string()),
@@ -90,16 +90,4 @@ export default defineSchema({
 			searchField: "content",
 			filterFields: ["receiverID", "_creationTime", "type"],
 		}),
-
-	presence: defineTable({
-		userID: v.id("users"),
-		roomID: v.union(
-			v.id("chatRooms"),
-			v.id("notes")
-		),
-		updatedAt: v.number(),
-		data: v.any()
-	})
-		.index("by_room_updated", ["roomID", "updatedAt"])
-		.index("by_user_room", ["userID", "roomID"]),
 });

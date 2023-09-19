@@ -35,6 +35,7 @@ export const getNote = query({
 							isCurrentUserNoteOwner: false,
 							doesUserHaveWriteAccess:
 								note.allowedUsers[idx].access === "write",
+							currentUser: user
 						};
 					}
 				}
@@ -45,12 +46,14 @@ export const getNote = query({
 				note: note,
 				isCurrentUserNoteOwner: false,
 				doesUserHaveWriteAccess: note.accessType === "anyone-can-write",
+				currentUser: user
 			};
 		} else {
 			return {
 				note: note,
 				isCurrentUserNoteOwner: true,
 				doesUserHaveWriteAccess: true,
+				currentUser: user
 			};
 		}
 	},
@@ -153,7 +156,7 @@ export const writeNotes = mutation({
 
 export const updateNote = mutation({
 	args: {
-		title: v.string(),
+		title: v.optional(v.string()),
 		description: v.optional(v.string()),
 		body: v.optional(v.string()),
 		noteID: v.id("notes"),
@@ -192,9 +195,28 @@ export const updateNote = mutation({
 			}
 		}
 
-		await ctx.db.patch(noteID, { title, description, body });
+		await ctx.db.patch(noteID, { title, description, body, });
 		return "success";
 	},
+});
+
+export const updateNoteTheme = mutation({
+	args: { noteTheme: noteTheme, noteID: v.id("notes") },
+	handler: async (ctx, { noteTheme, noteID }) => {
+		const user = await getUser(ctx, {});
+
+		if (!user) {
+			return null;
+		}
+
+		const note = await ctx.db.get(noteID);
+
+		if (!note) {
+			return null;
+		}
+
+		await ctx.db.patch(noteID, { noteTheme });
+	}
 });
 
 export const deleteNotes = mutation({

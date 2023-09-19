@@ -5,20 +5,23 @@ import React from "react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { NOTE_CONSTS } from "@/config/site";
 
 const DeleteNoteBtn = React.lazy(() => import("@/components/delete-note-btn"));
 const EditButton = React.lazy(() => import("@/components/edit-button"));
 const ShareButton = React.lazy(() => import("./share-access"));
+const ChangeTheme = React.lazy(() => import("./change-theme"));
 
 type Props = {
   setMode: React.Dispatch<React.SetStateAction<ViewMode>>,
   doesCurrentUserHaveWriteAccess: boolean,
   isCurrentUserNoteOwner: boolean,
-  note: Doc<"notes">
+  note: Doc<"notes">,
+  noteTheme: typeof NOTE_CONSTS.theme[number],
 }
 
 export const NoteHeader: React.FC<Props> = React.memo(
-  ({ note, doesCurrentUserHaveWriteAccess, isCurrentUserNoteOwner, setMode }) => {
+  ({ note, doesCurrentUserHaveWriteAccess, isCurrentUserNoteOwner, setMode, noteTheme }) => {
     const [toggle, setToggle] = React.useState(false);
 
     return (
@@ -71,6 +74,11 @@ export const NoteHeader: React.FC<Props> = React.memo(
               </DropdownMenuContent>
             </DropdownMenu>
           </li>
+          {isCurrentUserNoteOwner && (
+            <React.Suspense>
+              <ChangeTheme noteID={note._id} noteTheme={noteTheme} />
+            </React.Suspense>
+          )}
         </ul>
 
         {isCurrentUserNoteOwner && (

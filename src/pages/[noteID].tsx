@@ -17,13 +17,15 @@ const NotePage = React.lazy(() => import("./[noteID]/note-page"));
 interface NoteContextType {
   note: Doc<"notes"> | null,
   isCurrentUserNoteOwner: boolean,
-  doesCurrentUserHaveWriteAccess: boolean
+  doesCurrentUserHaveWriteAccess: boolean,
+  currentUser: Doc<"users"> | null
 }
 
 export const NoteContext = React.createContext<NoteContextType>({
   note: null,
   isCurrentUserNoteOwner: false,
-  doesCurrentUserHaveWriteAccess: false
+  doesCurrentUserHaveWriteAccess: false,
+  currentUser: null
 });
 
 const NoteContextProvider: React.FC<{ children: React.ReactNode, noteID: Id<"notes"> }> = ({
@@ -69,7 +71,8 @@ const NoteContextProvider: React.FC<{ children: React.ReactNode, noteID: Id<"not
   const data = {
     note: foundNote.note,
     doesCurrentUserHaveWriteAccess: foundNote.doesUserHaveWriteAccess,
-    isCurrentUserNoteOwner: foundNote.isCurrentUserNoteOwner
+    isCurrentUserNoteOwner: foundNote.isCurrentUserNoteOwner,
+    currentUser: foundNote.currentUser
   } satisfies NoteContextType;
 
   return (

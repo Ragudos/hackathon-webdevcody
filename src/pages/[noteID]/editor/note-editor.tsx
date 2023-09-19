@@ -29,8 +29,8 @@ const NoteEditor: React.FC<Props> = React.memo(
     setBody
   }) => {
     const [transition, startTransition] = React.useTransition();
-    const [title, setTitle] = React.useState(note.title);
-    const [description, setDescription] = React.useState(note.description);
+    const [title, setTitle] = React.useState(note.title ?? "");
+    const [description, setDescription] = React.useState(note.description ?? "");
 
     const updateNote = useMutation(api.notes.updateNote);
 
