@@ -7,10 +7,9 @@ export const LIST_LIMIT = 20;
 export const updatePresence = mutation({
   args: {
     roomID: v.union(v.id("chatRooms"), v.id("notes")),
-    userID: v.id("users"),
     data: v.any()
   },
-  handler: async (ctx, { roomID, userID, data }) => {
+  handler: async (ctx, { roomID, data }) => {
     const user = await getUser(ctx, {});
 
     if (!user) {
@@ -19,14 +18,14 @@ export const updatePresence = mutation({
 
     const existing = await ctx.db.query("presence")
       .withIndex("by_user_room", (q) =>
-        q.eq("userID", userID).eq("roomID", roomID))
+        q.eq("userID", user._id).eq("roomID", roomID))
       .unique();
 
     if (existing) {
       await ctx.db.patch(existing._id, { data, updatedAt: Date.now() });
     } else {
       await ctx.db.insert("presence", {
-        userID,
+        userID: user._id,
         data,
         roomID,
         updatedAt: Date.now()

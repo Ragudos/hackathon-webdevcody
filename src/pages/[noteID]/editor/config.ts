@@ -1,7 +1,10 @@
 import type { EditorThemeClasses } from "lexical/LexicalEditor";
 import type { InitialConfigType } from "@lexical/react/LexicalComposer";
 import type { ViewMode } from "../note-page";
+
 import toast from "react-hot-toast";
+
+import { ListItemNode, ListNode } from "@lexical/list";
 
 type Params = {
   mode: ViewMode,
@@ -32,5 +35,5 @@ export const getInitialConfig = ({
     onError,
     editorState: noteBody,
     editable: mode === "write",
-    nodes: []
+    nodes: [ListNode, ListItemNode]
   } satisfies InitialConfigType);

@@ -101,5 +101,5 @@ export default defineSchema({
 		data: v.any()
 	})
 		.index("by_room_updated", ["roomID", "updatedAt"])
-		.index("by_user_room", ["userID", "roomID"])
+		.index("by_user_room", ["userID", "roomID"]),
 });

@@ -91,5 +91,5 @@ const DeleteNoteBtn: React.FC<Props> = React.memo(
 	}
 );
 
-DeleteNoteBtn.displayName = "DeleteNoteButton";
+DeleteNoteBtn.displayName = "DeleteNoteBtn";
 export default DeleteNoteBtn;

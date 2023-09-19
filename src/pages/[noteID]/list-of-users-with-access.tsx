@@ -7,7 +7,7 @@ import React from "react";
 import toast from "react-hot-toast";
 
 import { Note } from "../notes";
-import { AllowedUserCard } from "../notes/allowed-user-card";
+import { AllowedUserCard } from "./allowed-user-card";
 
 import { SearchUser } from "@/components/search-user";
 import { Heading } from "@/components/ui/heading";

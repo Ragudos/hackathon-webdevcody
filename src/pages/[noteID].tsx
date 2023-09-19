@@ -52,6 +52,10 @@ const NoteContextProvider: React.FC<{ children: React.ReactNode, noteID: Id<"not
   }
 
   if (!foundNote) {
+    return null;
+  }
+
+  if (!foundNote.note) {
     return (
       <div>
         This note does not exist.

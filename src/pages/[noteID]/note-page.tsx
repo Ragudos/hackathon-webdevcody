@@ -7,6 +7,10 @@ import { NoteContext } from "../[noteID]";
 
 import { NoteHeader } from "./note-header";
 import { Heading } from "@/components/ui/heading";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import NoteEditor from "./editor/note-editor";
+import { EMPTY_BODY_JSON } from "@/config/site";
 
 const ReadOnlyNoteEditor = React.lazy(() => import("./editor/read-only-note-editor"));
 
@@ -18,8 +22,16 @@ const NotePage: React.FC = () => {
     doesCurrentUserHaveWriteAccess,
     isCurrentUserNoteOwner
   } = React.useContext(NoteContext);
+  const user = useQuery(api.users.getUser);
 
   const [mode, setMode] = React.useState<ViewMode>("read");
+  const [body, setBody] = React.useState(note?.body ?? EMPTY_BODY_JSON);
+
+  React.useEffect(() => {
+    if (note?.body) {
+      setBody(note?.body);
+    }
+  }, [note?.body]);
 
   React.useEffect(() => {
     if (
@@ -46,7 +58,7 @@ const NotePage: React.FC = () => {
       }}
       className="dark:border shadow-black/20 shadow-lg rounded-lg overflow-hidden"
     >
-      <header>
+      <header className="border-b-2">
         <NoteHeader
           setMode={setMode}
           note={note as Doc<"notes">}
@@ -55,7 +67,7 @@ const NotePage: React.FC = () => {
         />
       </header>
 
-      <article className="min-h-[100dvh]">
+      <article className="min-h-[100dvh] p-8">
         {mode === "read" && (
           <React.Fragment>
             <Heading
@@ -71,11 +83,22 @@ const NotePage: React.FC = () => {
             </Heading>
             <React.Suspense>
               <ReadOnlyNoteEditor
-                noteBody={note?.body as string}
+                noteBody={body}
                 mode={mode}
               />
             </React.Suspense>
           </React.Fragment>
+        )}
+
+        {mode === "write" && (
+          <NoteEditor
+            noteBody={body}
+            setBody={setBody}
+            user={user as Doc<"users">}
+            setMode={setMode}
+            note={note as Doc<"notes">}
+            isCurrentUserNoteOwner={isCurrentUserNoteOwner}
+          />
         )}
       </article>
     </div>

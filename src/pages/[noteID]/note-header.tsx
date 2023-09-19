@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 const DeleteNoteBtn = React.lazy(() => import("@/components/delete-note-btn"));
 const EditButton = React.lazy(() => import("@/components/edit-button"));
+const ShareButton = React.lazy(() => import("./share-access"));
 
 type Props = {
   setMode: React.Dispatch<React.SetStateAction<ViewMode>>,
@@ -72,6 +73,11 @@ export const NoteHeader: React.FC<Props> = React.memo(
           </li>
         </ul>
 
+        {isCurrentUserNoteOwner && (
+          <React.Suspense>
+            <ShareButton note={note} />
+          </React.Suspense>
+        )}
 
       </nav>
     );

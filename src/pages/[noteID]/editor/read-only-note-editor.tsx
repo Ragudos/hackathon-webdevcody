@@ -3,18 +3,34 @@ import type { ViewMode } from "../note-page";
 import React from "react";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
-
-import { getInitialConfig } from "./config";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { cn } from "@/lib/utils";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
+
+import { getInitialConfig } from "./config";
+import { cn } from "@/lib/utils";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 type Props = {
   noteBody: string,
   mode: ViewMode
 }
+
+const LiveUpdatePlugin = ({ noteBody }: { noteBody: string }) => {
+  const [editor] = useLexicalComposerContext();
+
+  React.useEffect(() => {
+    const parsedState = editor.parseEditorState(noteBody);
+    if (!parsedState || (parsedState !== editor._editorState)) {
+      editor.update(() => {
+        editor.setEditorState(parsedState);
+      });
+    }
+  }, [noteBody, editor]);
+
+  return null;
+};
 
 const ReadOnlyNoteEditor: React.FC<Props> = React.memo(
   ({
@@ -23,6 +39,7 @@ const ReadOnlyNoteEditor: React.FC<Props> = React.memo(
   }) => (
     <div className="mt-8">
       <LexicalComposer initialConfig={getInitialConfig({ mode, noteBody })}>
+        <LiveUpdatePlugin noteBody={noteBody} />
         <ListPlugin />
         <div className="relative">
           <RichTextPlugin
