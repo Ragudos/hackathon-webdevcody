@@ -66,7 +66,9 @@ export const TextColorPlugin: React.FC<Props> = React.memo(
           onUpdate: () => {
             setActiveTextColor(color);
             setChosenColorInHex(rgbToHex(color));
-          }
+          },
+          discrete: true,
+          skipTransforms: true
         });
       },
       [editor, setActiveTextColor, setChosenColorInHex]
@@ -112,9 +114,10 @@ export const TextColorPlugin: React.FC<Props> = React.memo(
                 <section className="flex flex-wrap gap-2">
                   <h6 className="sr-only">Hardcoded Colors</h6>
 
-                  {colors.map((c) => (
+                  {colors.map((c, idx) => (
                     <Button
                       size="icon"
+                      key={c + "text" + idx}
                       className="hover:bg-transparent focus-visible:outline focus-visible:outline-2  focus-visible:outline-foreground focus-visible:ring-background hover:outline hover:outline-2 hover:outline-offset-2 hover:outline-foreground hover:ring-background focus-visible:outline-offset-2 rounded-sm w-4 h-4"
                       style={{
                         backgroundColor: `rgb(${c[0]}, ${c[1]}, ${c[2]})`

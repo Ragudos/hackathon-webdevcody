@@ -6,7 +6,6 @@ import { useMutation, useQuery } from "convex/react";
 import React from "react";
 import toast from "react-hot-toast";
 
-import { Note } from "../notes";
 import { AllowedUserCard } from "./allowed-user-card";
 
 import { SearchUser } from "@/components/search-user";
@@ -17,11 +16,15 @@ type AllowedUserID = {
 	access: "write" | "read";
 };
 
-const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
+const ListOfUsersWithAccess: React.FC<{ note: Doc<"notes"> }> = React.memo(({ note }) => {
 	const allowedUsers = useQuery(api.notes.getUsersWithAccess, {
 		users: note.allowedUsers,
 	});
+
+	const [, startTransition] = React.useTransition();
+
 	const updateAllowedUsers = useMutation(api.notes.updateAllowedUsers);
+	const sendNotification = useMutation(api.notification.sendNotification);
 
 	const handleInviteUser = React.useCallback(
 		(user: Doc<"users">) => {
@@ -36,28 +39,32 @@ const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
 				}
 			}
 			const obj = { userID: user._id, access: "read" as "read" | "write" };
-			if (note.allowedUsers) {
-				const response = updateAllowedUsers({
-					users: note.allowedUsers.concat([obj]),
-					noteID: note._id,
-				});
-
-				if (response === null || response instanceof Error) {
-					toast.error("Something went wrong.");
+			startTransition(() => {
+				if (note.allowedUsers) {
+					void updateAllowedUsers({
+						users: note.allowedUsers.concat([obj]),
+						noteID: note._id,
+					});
+					void sendNotification({
+						linkToNotif: `${location.origin}/notes/${note._id}`,
+						receiverID: user._id,
+						title: "You have been invited!",
+						message: "Hello, come and read my note!"
+					});
+					toast.success("Successfully invited this user");
 				} else {
-					toast.success("Successfully invited " + user.name);
+					void updateAllowedUsers({ users: [obj], noteID: note._id });
+					void sendNotification({
+						linkToNotif: `${location.origin}/notes/${note._id}`,
+						receiverID: user._id,
+						title: "You have been invited!",
+						message: "Hello, come and read my note!"
+					});
+					toast.success("Successfully invited this user");
 				}
-			} else {
-				const response = updateAllowedUsers({ users: [obj], noteID: note._id });
-
-				if (response === null || response instanceof Error) {
-					toast.error("Something went wrong.");
-				} else {
-					toast.success("Successfully invited " + user.name);
-				}
-			}
+			});
 		},
-		[note, updateAllowedUsers],
+		[note, updateAllowedUsers, sendNotification],
 	);
 
 	const onAccessChange = React.useCallback(
@@ -73,15 +80,18 @@ const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
 						newAllowedUsers.push(note.allowedUsers[idx]);
 					}
 				}
-				const response = await updateAllowedUsers({
-					users: newAllowedUsers,
-					noteID: note._id,
-				});
-				if (response === null || response instanceof Error) {
-					toast.error("Something went wrong.");
-				} else {
+				startTransition(() => {
+					void updateAllowedUsers({
+						users: newAllowedUsers,
+						noteID: note._id,
+					});
+					void sendNotification({
+						receiverID: userID,
+						title: `Your access on note ${note._id} has been revoked.`,
+						message: "Sorry, I removed you access :("
+					});
 					toast.success("Successfully revoked access to this user.");
-				}
+				});
 			}
 
 			if (value === "read") {
@@ -100,17 +110,20 @@ const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
 						});
 					}
 				}
-				const response = await updateAllowedUsers({
-					users: newAllowedUsers,
-					noteID: note._id,
-				});
-				if (response === null || response instanceof Error) {
-					toast.error("Something went wrong.");
-				} else {
+				startTransition(() => {
+					void updateAllowedUsers({
+						users: newAllowedUsers,
+						noteID: note._id,
+					});
 					toast.success(
 						"Successfully changed the access of this user to read-only.",
 					);
-				}
+					void sendNotification({
+						receiverID: userID,
+						title: `Your access on note ${note._id} has been changed to read-only.`,
+						message: "Sorry, let's just read my note together."
+					});
+				});
 			}
 
 			if (value === "write") {
@@ -129,20 +142,25 @@ const ListOfUsersWithAccess: React.FC<Note> = React.memo(({ note }) => {
 						});
 					}
 				}
-				const response = await updateAllowedUsers({
-					users: newAllowedUsers,
-					noteID: note._id,
-				});
-				if (response === null || response instanceof Error) {
-					toast.error("Something went wrong.");
-				} else {
+				startTransition(() => {
+					void updateAllowedUsers({
+						users: newAllowedUsers,
+						noteID: note._id,
+					});
+
 					toast.success(
 						"Successfully changed the access of this user to edit this note.",
 					);
-				}
+					void sendNotification({
+						linkToNotif: `${location.origin}/notes/${note._id}`,
+						receiverID: userID,
+						title: "You have been invited!",
+						message: "Hello, let's edit my note together!"
+					});
+				});
 			}
 		},
-		[note._id, note.allowedUsers, updateAllowedUsers],
+		[note._id, note.allowedUsers, sendNotification, updateAllowedUsers],
 	);
 
 	return (

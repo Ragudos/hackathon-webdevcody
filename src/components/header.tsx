@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { ThemeContext, Themes } from "./theme";
+import { Notification } from "@/pages/root/logged-in/notification";
 
 const ThemeSelect: React.FC = () => {
 	const { theme, changeTheme } = React.useContext(ThemeContext);
@@ -108,7 +109,12 @@ export const Header: React.FC = () => {
 									</Button>
 								</React.Fragment>
 							)}
-							{isAuthenticated && <UserDropdown />}
+							{isAuthenticated && 
+								<React.Fragment>
+									<Notification />
+									<UserDropdown />
+								</React.Fragment>
+							}
 						</React.Fragment>
 					)}
 				</div>

@@ -1,5 +1,4 @@
-import type { Id } from "convex/_generated/dataModel";
-import type { AllowedUser } from "../notes";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import type { ViewMode } from "./note-page";
 
 import React from "react";
@@ -11,8 +10,10 @@ type AllowedUserProps = {
 	onAccessChange: (
 		_userID: Id<"users">,
 		value: "read" | "write" | "remove",
-	) => void;
-} & AllowedUser;
+	) => void,
+	accessType: "read" | "write",
+	user: Doc<"users">
+}
 
 export const AllowedUserCard: React.FC<AllowedUserProps> = React.memo(
 	({ accessType, user, onAccessChange }) => {

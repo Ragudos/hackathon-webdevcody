@@ -6,20 +6,21 @@ import React from "react";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 
 import { getInitialConfig } from "./config";
-import { EMPTY_BODY_JSON } from "@/config/site";
+
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { ExtendedCollaborationPlugin } from "./plugins/collaboration";
 import { $getSelection, $isRangeSelection, EditorState, TextNode } from "lexical";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import TextFormatPlugin from "./plugins/text-format";
+
 import { RGB } from "@/consts";
+
 import { TextColorPlugin } from "./plugins/text-color";
 import { BackgroundColorPlugin } from "./plugins/background-color";
+import { ExtendedCollabPlugin } from "./plugins/extended-collab";
 
 type Props = {
   note: Doc<"notes">,
@@ -78,18 +79,18 @@ const BodyEditor: React.FC<Props> = React.memo(
                 }
                 const prevBg = prevBackground[1];
                 const prevBgArr = [];
-                  let str = "";
-                  for (let idx = 4; prevBg && idx < prevBg.length; ++idx) {
-                    const item = +prevBg[idx];
-                    if (!isNaN(item)) {
-                      str += item;
-                    }
-
-                    if (str && isNaN(item)) {
-                      prevBgArr.push(+str);
-                      str = "";
-                    }
+                let str = "";
+                for (let idx = 4; prevBg && idx < prevBg.length; ++idx) {
+                  const item = +prevBg[idx];
+                  if (!isNaN(item)) {
+                    str += item;
                   }
+
+                  if (str && isNaN(item)) {
+                    prevBgArr.push(+str);
+                    str = "";
+                  }
+                }
                 setActiveBgColor(prevBgArr.length === 3 ? prevBgArr as RGB : undefined);
               }
             });
@@ -101,8 +102,7 @@ const BodyEditor: React.FC<Props> = React.memo(
     );
 
     return (
-      <LexicalComposer initialConfig={getInitialConfig({ mode, noteBody: note.body ?? EMPTY_BODY_JSON })}>
-        <HistoryPlugin />
+      <LexicalComposer initialConfig={getInitialConfig({ mode, noteBody: null })}>
         <ListPlugin />
 
         <section className="border-b-[1px] p-1 flex flex-wrap gap-1">
@@ -124,9 +124,10 @@ const BodyEditor: React.FC<Props> = React.memo(
         </section>
 
         <OnChangePlugin onChange={onChange} />
-        <ExtendedCollaborationPlugin
+        <ExtendedCollabPlugin
           noteID={note._id}
           user={user}
+          noteBody={note.body}
         />
         <div className="relative">
           <RichTextPlugin

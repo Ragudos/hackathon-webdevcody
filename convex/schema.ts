@@ -47,6 +47,7 @@ export default defineSchema({
 		tokenIdentifier: v.string(),
 		name: v.optional(v.string()),
 		image: v.optional(v.string()),
+		nameFromAuth: v.optional(v.string())
 	})
 		.index("by_token", ["tokenIdentifier"])
 		.index("by_name", ["name"])
@@ -61,7 +62,7 @@ export default defineSchema({
 		.index("by_user_and_category", ["user", "category"])
 		.index("by_user_and_title", ["user", "title"])
 		.index("by_user_category_and_title", ["user", "category", "title"])
-		.index("shared_with_user", ["user", "allowedUsers"]),
+		.index("shared_with_user", ["allowedUsers"]),
 
 	chatRooms: defineTable({
 		users: v.array(v.object({
@@ -78,16 +79,29 @@ export default defineSchema({
 		.index("by_note_id_and_owner_id", ["noteID", "ownerID"]),
 
 	messages: defineTable({
-		senderID: v.id("users"),
+		sender: v.object({
+			name: v.optional(v.string()),
+			image: v.optional(v.string()),
+			id: v.id("users")
+		}),
 		type: v.union(v.literal("private_message"), v.literal("group_message")),
 		receiverID: v.union(v.id("users"), v.id("chatRooms"), v.id("notes")),
 		content: v.string(),
 	})
 		.index("by_type", ["type"])
 		.index("by_receiver", ["receiverID"])
-		.index("by_receiver_and_sender", ["type", "receiverID", "senderID"])
+		.index("by_receiver_and_sender", ["type", "receiverID", "sender"])
 		.searchIndex("content", {
 			searchField: "content",
 			filterFields: ["receiverID", "_creationTime", "type"],
 		}),
+
+	notifications: defineTable({
+		receiverID: v.id("users"),
+		senderID: v.id("users"),
+		title: v.string(),
+		isRead: v.boolean(),
+		message: v.string(),
+		linkToNotif: v.optional(v.string())
+	}).index("by_receiver_sender", ["receiverID", "senderID"])
 });

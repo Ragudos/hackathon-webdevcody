@@ -38,14 +38,14 @@ const NoteEditor: React.FC<Props> = React.memo(
       const timer = setInterval(() => {
         if (
           title !== note.title ||
-          description !== note.description ||
-          noteBody !== note.body
+          description !== note.description
+          // noteBody !== note.body
         ) {
           startTransition(() => {
             void updateNote({
               description,
               title,
-              body: noteBody,
+              // body: noteBody,
               noteID: note._id
             });
           });

@@ -111,17 +111,26 @@ export const getAllNotesSharedWithUser = query({
 			return null;
 		}
 
-		const notes = await ctx.db
+		const notesWithWriteAccess = await ctx.db
 			.query("notes")
 			.withIndex("shared_with_user", (q) =>
-				q.eq("user", user._id).eq("allowedUsers", [
-					{ userID: user._id, access: "read" },
-					{ userID: user._id, access: "write" },
-				]),
-			)
+			q.eq("allowedUsers", [{ userID: user._id, access: "write"}]))
 			.collect();
 
-		return notes;
+		const notesWithReadAccess = await ctx.db
+		.query("notes")
+		.withIndex("shared_with_user", (q) =>
+		q.eq("allowedUsers", [{ userID: user._id, access: "read"}]))
+		.collect();
+
+		if ((!notesWithReadAccess || notesWithReadAccess.length === 0) && (!notesWithWriteAccess || notesWithWriteAccess.length === 0)) {
+			return null;
+		} else {
+			return {
+				notesWithWriteAccess,
+				notesWithReadAccess
+			};
+		}
 	},
 });
 

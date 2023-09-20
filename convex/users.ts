@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalQuery, mutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 /**
  * Insert or update the user in a Convex table then return the document's ID.
@@ -30,8 +30,8 @@ export const store = mutation({
 			.unique();
 		if (user !== null) {
 			// If we've seen this identity before but the name has changed, patch the value.
-			if (user.name !== identity.name) {
-				await ctx.db.patch(user._id, { name: identity.name });
+			if (user.nameFromAuth !== identity.name) {
+				await ctx.db.patch(user._id, { nameFromAuth: identity.name });
 			}
 
 			if (user.image !== identity.pictureUrl) {
@@ -42,13 +42,14 @@ export const store = mutation({
 		// If it's a new identity, create a new `User`.
 		return await ctx.db.insert("users", {
 			name: identity.name!,
+			nameFromAuth: identity.name!,
 			image: identity.pictureUrl,
 			tokenIdentifier: identity.tokenIdentifier,
 		});
 	},
 });
 
-export const getUser = internalQuery({
+export const getUser = query({
 	handler: async (ctx) => {
 		const identity = await ctx.auth.getUserIdentity();
 		if (!identity) {
@@ -85,4 +86,17 @@ export const searchUser = query({
 			)
 			.collect();
 	},
+});
+
+export const updateUserName = mutation({
+	args: { userID: v.id("users"), newName: v.string() },
+	handler: async (ctx, { userID, newName }) => {
+		const user = await getUser(ctx, {});
+
+		if (!user || user._id !== userID) {
+			return null;
+		}
+
+		await ctx.db.patch(userID, { name: newName });
+	}
 });

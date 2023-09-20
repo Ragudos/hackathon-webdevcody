@@ -60,7 +60,9 @@ export const BackgroundColorPlugin: React.FC<Props> = React.memo(
           onUpdate: () => {
             setActiveBgColor(color);
             setChosenColorInHex(rgbToHex(color));
-          }
+          },
+          discrete: true,
+          skipTransforms: true
         });
       },
       [editor, setActiveBgColor, setChosenColorInHex]
@@ -72,8 +74,8 @@ export const BackgroundColorPlugin: React.FC<Props> = React.memo(
           <Popover>
             <PopoverTrigger asChild>
               <Toolbar.Button
-                title="Text Color"
-                aria-label="Text Color"
+                title="Background Color"
+                aria-label="Background Color"
                 className="text-xs w-6 h-6 p-0 px-1 hover:text-inherit hover:bg-accent/10 rounded-sm"
               >
                 <ColorWheelIcon className="w-4 h-4" />
@@ -91,7 +93,7 @@ export const BackgroundColorPlugin: React.FC<Props> = React.memo(
               asChild
             >
               <div className="flex flex-col gap-4 p-4 rounded-lg shadow-md shadow-black/20">
-                <Heading typeOfHeading="h5">Text Color</Heading>
+                <Heading typeOfHeading="h5">Background Color</Heading>
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="copy-hex-code" className="text-base">Hex Code</label>
@@ -106,9 +108,10 @@ export const BackgroundColorPlugin: React.FC<Props> = React.memo(
                 <section className="flex flex-wrap gap-2">
                   <h6 className="sr-only">Hardcoded Colors</h6>
 
-                  {colors.map((c) => (
+                  {colors.map((c, idx) => (
                     <Button
                       size="icon"
+                      key={c + "bg" + idx}
                       className="hover:bg-transparent focus-visible:outline focus-visible:outline-2  focus-visible:outline-foreground focus-visible:ring-background hover:outline hover:outline-2 hover:outline-offset-2 hover:outline-foreground hover:ring-background focus-visible:outline-offset-2 rounded-sm w-4 h-4"
                       style={{
                         backgroundColor: `rgb(${c[0]}, ${c[1]}, ${c[2]})`

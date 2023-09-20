@@ -8,7 +8,7 @@ import { ListItemNode, ListNode } from "@lexical/list";
 
 type Params = {
   mode: ViewMode,
-  noteBody: string
+  noteBody: string | null
 }
 
 const theme = {

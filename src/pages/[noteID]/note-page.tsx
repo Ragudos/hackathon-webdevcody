@@ -1,4 +1,4 @@
-import type { Doc } from "../../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
 
 import React from "react";
 import toast from "react-hot-toast";
@@ -8,9 +8,11 @@ import { NoteContext } from "../[noteID]";
 import { NoteHeader } from "./note-header";
 import { Heading } from "@/components/ui/heading";
 import { EMPTY_BODY_JSON, NOTE_CONSTS } from "@/config/site";
+import { RotatingLoader } from "@/components/rotating-loader";
 
 const ReadOnlyNoteEditor = React.lazy(() => import("./editor/read-only-note-editor"));
 const NoteEditor = React.lazy(() => import("./editor/note-editor"));
+const Chat = React.lazy(() => import("./chat/chat"));
 
 export type ViewMode = "read" | "write";
 
@@ -32,9 +34,9 @@ const NotePage: React.FC = () => {
   }, [note?.body]);
 
   React.useEffect(() => {
-      if (note?.noteTheme && note.noteTheme !== noteTheme) {
-        setNoteTheme(note?.noteTheme);
-      }
+    if (note?.noteTheme && note.noteTheme !== noteTheme) {
+      setNoteTheme(note?.noteTheme);
+    }
   }, [note?.noteTheme, noteTheme]);
 
   React.useEffect(() => {
@@ -55,60 +57,72 @@ const NotePage: React.FC = () => {
   ]);
 
   return (
-    <div
-      style={{
-        backgroundColor: `hsl(var(--${noteTheme}))`,
-        color: `hsl(var(--${noteTheme}-foreground))`,
-      }}
-      className="dark:border shadow-black/20 shadow-lg rounded-lg overflow-hidden"
-    >
-      <header className="border-b-2">
-        <NoteHeader
-          noteTheme={noteTheme}
-          setMode={setMode}
-          note={note as Doc<"notes">}
-          doesCurrentUserHaveWriteAccess={doesCurrentUserHaveWriteAccess}
-          isCurrentUserNoteOwner={isCurrentUserNoteOwner}
-        />
-      </header>
-
-      <article className="min-h-[100dvh] p-8">
-        {mode === "read" && (
-          <React.Fragment>
-            <Heading
-              typeOfHeading="h1"
-              containerStyles="text-start"
-              className={!note?.title ? "opacity-60" : undefined}
-              descriptionStyles={!note?.description ? "opacity-60" : undefined}
-              description={
-                note?.description || "Add a description to your note..."
-              }
-            >
-              {note?.title || "Add a title to your note..."}
-            </Heading>
-            <React.Suspense>
-              <ReadOnlyNoteEditor
-                noteBody={body}
-                mode={mode}
-              />
-            </React.Suspense>
-          </React.Fragment>
-        )}
-
-        {mode === "write" && (
+    <React.Fragment>
+      {note && (
+        <header className="py-4">
           <React.Suspense>
-            <NoteEditor
-              noteBody={body}
-              setBody={setBody}
-              user={currentUser as Doc<"users">}
-              setMode={setMode}
-              note={note as Doc<"notes">}
-              isCurrentUserNoteOwner={isCurrentUserNoteOwner}
+            <Chat
+              receiverID={note._id as Id<"notes">}
             />
           </React.Suspense>
-        )}
-      </article>
-    </div>
+        </header>
+      )
+      }
+      <div
+        style={{
+          backgroundColor: `hsl(var(--${noteTheme}))`,
+          color: `hsl(var(--${noteTheme}-foreground))`,
+        }}
+        className="dark:border shadow-black/20 shadow-lg rounded-lg overflow-hidden"
+      >
+        <header className="border-b-2">
+          <NoteHeader
+            noteTheme={noteTheme}
+            setMode={setMode}
+            note={note as Doc<"notes">}
+            doesCurrentUserHaveWriteAccess={doesCurrentUserHaveWriteAccess}
+            isCurrentUserNoteOwner={isCurrentUserNoteOwner}
+          />
+        </header>
+
+        <article className="min-h-[100dvh] p-8">
+          {mode === "read" && (
+            <React.Fragment>
+              <Heading
+                typeOfHeading="h1"
+                containerStyles="text-start"
+                className={!note?.title ? "opacity-60" : undefined}
+                descriptionStyles={!note?.description ? "opacity-60" : undefined}
+                description={
+                  note?.description || "Add a description to your note..."
+                }
+              >
+                {note?.title || "Add a title to your note..."}
+              </Heading>
+              <React.Suspense>
+                <ReadOnlyNoteEditor
+                  noteBody={body}
+                  mode={mode}
+                />
+              </React.Suspense>
+            </React.Fragment>
+          )}
+
+          {mode === "write" && (
+            <React.Suspense fallback={<RotatingLoader />}>
+              <NoteEditor
+                noteBody={body}
+                setBody={setBody}
+                user={currentUser as Doc<"users">}
+                setMode={setMode}
+                note={note as Doc<"notes">}
+                isCurrentUserNoteOwner={isCurrentUserNoteOwner}
+              />
+            </React.Suspense>
+          )}
+        </article>
+      </div>
+    </React.Fragment >
   );
 };
 

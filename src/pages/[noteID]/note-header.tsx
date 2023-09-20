@@ -6,7 +6,6 @@ import React from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { NOTE_CONSTS } from "@/config/site";
-
 const DeleteNoteBtn = React.lazy(() => import("@/components/delete-note-btn"));
 const EditButton = React.lazy(() => import("@/components/edit-button"));
 const ShareButton = React.lazy(() => import("./share-access"));
@@ -76,7 +75,9 @@ export const NoteHeader: React.FC<Props> = React.memo(
           </li>
           {isCurrentUserNoteOwner && (
             <React.Suspense>
-              <ChangeTheme noteID={note._id} noteTheme={noteTheme} />
+              <li>
+                <ChangeTheme noteID={note._id} noteTheme={noteTheme} />
+              </li>
             </React.Suspense>
           )}
         </ul>
